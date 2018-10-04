@@ -1,8 +1,8 @@
 fn main() {
-    println!("Hello, world!");
     println!("Start LP");
 
     let c = Canonical::sample();
+    println!("{:?}",c);
     let mut d = Dict::from_canonical(&c);
     d.solve();
     println!("{:?}",d);
