@@ -54,32 +54,65 @@ impl Dict{
         }
     }
     pub fn solve(&mut self){
-        let i = self.choose_column().unwrap();
-        self.pivot(i);
+        loop {
+            let i  = match self.choose_column(){
+                None=> break,
+                Some(i) => i
+            };
+            self.pivot(i);
+        }
     }
     fn choose_column(&self) -> Option<usize>{
         argmax(&self.c)
     }
-    fn pivot(&mut self,i: usize) -> Option<()>{ 
-        let j = self.ratio_test(i)?;
+    fn pivot(&mut self,piv: usize) -> Option<()>{ 
+        let row = self.ratio_test(piv)?;
+        println!("{}",row );
+        for j in 0..self.b.len(){
+            if j==row {continue};
+            let ratio = self.a[j][piv] / self.a[row][piv];
 
+            for k in 0..self.c.len(){
+                if k==piv {continue};
+                self.a[j][k] -= ratio * self.a[row][k];
+            }
+            self.b[j] -= ratio * self.b[row];
+
+            self.a[j][piv] = ratio;
+        }
+        let ratio = self.c[piv] / self.a[row][piv];
+        for k in 0..self.c.len(){
+            if k==piv {continue};
+            self.c[k] -= ratio * self.a[row][k];
+        }
+        self.c[piv] = ratio;
+        self.max -= ratio * self.b[row];
+        let temp = self.base[row];
+        self.base[row]  = self.unbase[piv];
+        self.unbase[piv] = temp;
         Some(())
     }
     fn ratio_test(&self, i: usize) -> Option<usize>{
         let mut index = 0;
         let mut min =  f64::INFINITY;
         for j in 0..self.base.len(){
-            if self.b[j] < 0.0 {
-                continue;
-            }
-            let ratio = self.b[j] / self.a[i][j];
-            min = if ratio > min {
-                index = i;
+            let ratio = self.b[j] / self.a[j][i];
+            min = if ratio < min {
+                index = j;
                 ratio
             } else {min};
         }        
         if min == f64::INFINITY {None} else {Some(index)}
     }
+}
+
+#[test]
+fn test_pivot(){
+    let mut d = Dict::from_canonical(&Canonical::sample());
+    println!("{:?}",d );
+    let res = d.pivot(0);
+    println!("{:?}",res);
+    println!("{:?}",d );
 }
 
 
