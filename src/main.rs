@@ -45,8 +45,8 @@ impl Dict{
         let base_num = can.b.len() as i64;
         let unbase_num = can.c.len() as i64;
         Dict{
-            unbase: (0..base_num).collect(),
-            base: (base_num..(base_num+unbase_num)).collect(),
+            unbase: (0..unbase_num).collect(),
+            base: (unbase_num..(base_num+unbase_num)).collect(),
             a: can.a.clone(),
             b: can.b.clone(),
             c: can.c.clone(),
@@ -78,15 +78,18 @@ impl Dict{
             }
             self.b[j] -= ratio * self.b[row];
 
-            self.a[j][piv] = ratio;
+            self.a[j][piv] = -ratio;
         }
-        let ratio = self.c[piv] / self.a[row][piv];
+        let ratio = -self.c[piv] / self.a[row][piv];
         for k in 0..self.c.len(){
             if k==piv {continue};
-            self.c[k] -= ratio * self.a[row][k];
+            self.c[k] += ratio * self.a[row][k];
         }
         self.c[piv] = ratio;
         self.max -= ratio * self.b[row];
+        self.b[row] = self.b[row]/self.a[row][piv];
+        self.a[row][piv] = 1.0 / self.a[row][piv];
+
         let temp = self.base[row];
         self.base[row]  = self.unbase[piv];
         self.unbase[piv] = temp;
