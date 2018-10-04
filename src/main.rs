@@ -3,7 +3,8 @@ fn main() {
     println!("Start LP");
 
     let c = Canonical::sample();
-    let d = Dict::from_canonical(&c);
+    let mut d = Dict::from_canonical(&c);
+    d.solve();
     println!("{:?}",d);
 }
 
@@ -53,14 +54,15 @@ impl Dict{
             max : 0.0,
         }
     }
-    pub fn solve(&mut self){
+    pub fn solve(&mut self) -> Option<()>{
         loop {
             let i  = match self.choose_column(){
                 None=> break,
                 Some(i) => i
             };
-            self.pivot(i);
+            self.pivot(i)?;
         }
+        Some(())
     }
     fn choose_column(&self) -> Option<usize>{
         argmax(&self.c)
