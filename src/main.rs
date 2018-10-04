@@ -1,5 +1,3 @@
-use std::io;
-
 fn main() {
     println!("Hello, world!");
     println!("Start LP");
@@ -19,6 +17,23 @@ struct Dict{
     max: f64,
 }
 
+fn argmax<T: PartialOrd>(v: &Vec<T>) -> usize{
+    assert!(v.len() >0);
+    let mut max = &v[0];
+    let mut index = 0;
+    for (i,x) in v.into_iter().enumerate() {
+        max = if *max > *x {max} else {index = i; x};
+    }
+    index
+}
+
+#[test]
+fn test_argmax(){
+    let v: Vec<f64> = vec![2.0,3.0,1.0];
+    let i = argmax(&v);
+    assert_eq!(i,1);
+}
+
 impl Dict{
     fn from_canonical (can: &Canonical) -> Dict{
         let base_num = can.b.len() as i64;
@@ -32,7 +47,14 @@ impl Dict{
             max : 0.0,
         }
     }
+    pub fn solve(&mut self){
+
+    }
+    fn choose_column(&self) -> usize{
+        argmax(&self.c)
+    }
 }
+
 
 #[derive(Debug)]
 struct Canonical {
