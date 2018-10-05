@@ -77,7 +77,6 @@ impl Dict{
     }
     fn pivot(&mut self,piv: usize) -> Option<()>{ 
         let row = self.ratio_test(piv)?;
-        println!("{}",row );
         for i in 0..self.y+1{
             self.buf[i] = 0.0;
         }
@@ -85,7 +84,6 @@ impl Dict{
         std::mem::swap(&mut self.buf, &mut self.a[row]);
         let ratio_seed = 1.0 / self.buf[piv];
         self.buf[piv] = -1.0;
-        println!("{:?}",self );
         for i in 0..self.x+1{
             let ratio = -self.a[i][piv] * ratio_seed;
             self.a[i][piv] = 0.0;
