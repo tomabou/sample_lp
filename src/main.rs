@@ -12,10 +12,12 @@ fn main() {
 struct Dict{
     unbase: Vec<i64>,
     base: Vec<i64>,
-    a: Vec<Vec<f64>>,    
+    a: Vec<Vec<f64>>,
+    x: usize,
+    y: usize ,
 }
 
-fn argmax(v: &Vec<f64>) -> Option<usize>{
+fn argmax(v: &[f64]) -> Option<usize>{
     assert!(v.len() >0);
     let mut max = v[0];
     let mut index = 0;
@@ -50,6 +52,8 @@ impl Dict{
                 nv.push(*w);
                 nv
             }).collect(),
+            x: base_num as usize,
+            y: unbase_num as usize,
         };
         let c = can.c.clone();
         c.push(0.0);
@@ -67,7 +71,7 @@ impl Dict{
         Some(())
     }
     fn choose_column(&self) -> Option<usize>{
-        argmax(&self.c)
+        argmax(&self.a[self.x][0..self.y])
     }
     fn pivot(&mut self,piv: usize) -> Option<()>{ 
         let row = self.ratio_test(piv)?;
