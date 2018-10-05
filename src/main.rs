@@ -4,8 +4,8 @@ fn main() {
     let c = Canonical::sample();
     println!("{:?}",c);
     let mut d = Dict::from_canonical(&c);
-    println!("{:?}",d);
     d.solve();
+    println!("{:?}",d);
 }
 
 #[derive(Debug)]
@@ -13,6 +13,7 @@ struct Dict{
     unbase: Vec<i64>,
     base: Vec<i64>,
     a: Vec<Vec<f64>>,
+    buf :Vec<f64>,
     x: usize,
     y: usize ,
 }
@@ -54,8 +55,9 @@ impl Dict{
             }).collect(),
             x: base_num as usize,
             y: unbase_num as usize,
+            buf: vec![0.0; unbase_num as usize+1],
         };
-        let c = can.c.clone();
+        let mut c = can.c.clone();
         c.push(0.0);
         d.a.push(c);
         d
@@ -76,40 +78,31 @@ impl Dict{
     fn pivot(&mut self,piv: usize) -> Option<()>{ 
         let row = self.ratio_test(piv)?;
         println!("{}",row );
-        for j in 0..self.b.len(){
-            if j==row {continue};
-            let ratio = self.a[j][piv] / self.a[row][piv];
-
-            for k in 0..self.c.len(){
-                if k==piv {continue};
-                self.a[j][k] -= ratio * self.a[row][k];
+        for i in 0..self.y+1{
+            self.buf[i] = 0.0;
+        }
+        self.buf[piv] = 1.0;
+        std::mem::swap(&mut self.buf, &mut self.a[row]);
+        let ratio_seed = 1.0 / self.buf[piv];
+        self.buf[piv] = -1.0;
+        println!("{:?}",self );
+        for i in 0..self.x+1{
+            let ratio = -self.a[i][piv] * ratio_seed;
+            self.a[i][piv] = 0.0;
+            for j in 0..self.y+1{
+                self.a[i][j] += ratio * self.buf[j];
             }
-            self.b[j] -= ratio * self.b[row];
-
-            self.a[j][piv] = -ratio;
         }
-        let ratio = -self.c[piv] / self.a[row][piv];
-        for k in 0..self.c.len(){
-            if k==piv {continue};
-            self.c[k] += ratio * self.a[row][k];
-        }
-        self.c[piv] = ratio;
-        self.max -= ratio * self.b[row];
-        self.b[row] = self.b[row]/self.a[row][piv];
-        self.a[row][piv] = 1.0 / self.a[row][piv];
-
-        let temp = self.base[row];
-        self.base[row]  = self.unbase[piv];
-        self.unbase[piv] = temp;
+        std::mem::swap(&mut self.base[row], &mut self.unbase[piv]);
         Some(())
     }
-    fn ratio_test(&self, i: usize) -> Option<usize>{
+    fn ratio_test(&self, j: usize) -> Option<usize>{
         let mut index = 0;
         let mut min =  f64::INFINITY;
-        for j in 0..self.base.len(){
-            let ratio = self.b[j] / self.a[j][i];
+        for i in 0..self.x{
+            let ratio = -self.a[i][self.y] / self.a[i][j];
             min = if ratio < min {
-                index = j;
+                index = i;
                 ratio
             } else {min};
         }        
