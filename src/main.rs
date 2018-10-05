@@ -4,8 +4,8 @@ fn main() {
     let c = Canonical::sample();
     println!("{:?}",c);
     let mut d = Dict::from_canonical(&c);
-    d.solve();
     println!("{:?}",d);
+    d.solve();
 }
 
 #[derive(Debug)]
@@ -13,9 +13,6 @@ struct Dict{
     unbase: Vec<i64>,
     base: Vec<i64>,
     a: Vec<Vec<f64>>,    
-    b: Vec<f64>,
-    c: Vec<f64>,
-    max: f64,
 }
 
 fn argmax(v: &Vec<f64>) -> Option<usize>{
@@ -45,14 +42,19 @@ impl Dict{
     fn from_canonical (can: &Canonical) -> Dict{
         let base_num = can.b.len() as i64;
         let unbase_num = can.c.len() as i64;
-        Dict{
+        let mut d = Dict{
             unbase: (0..unbase_num).collect(),
             base: (unbase_num..(base_num+unbase_num)).collect(),
-            a: can.a.clone(),
-            b: can.b.clone(),
-            c: can.c.clone(),
-            max : 0.0,
-        }
+            a: can.a.clone().into_iter().zip(can.b.iter()).map(|(vec,w)|{
+                let mut nv: Vec<f64>= vec.into_iter().map(|x|{-x}).collect();
+                nv.push(*w);
+                nv
+            }).collect(),
+        };
+        let c = can.c.clone();
+        c.push(0.0);
+        d.a.push(c);
+        d
     }
     pub fn solve(&mut self) -> Option<()>{
         loop {
