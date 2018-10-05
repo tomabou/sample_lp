@@ -99,6 +99,7 @@ impl Dict{
         let mut min =  f64::INFINITY;
         for i in 0..self.x{
             let ratio = -self.a[i][self.y] / self.a[i][j];
+            if ratio < 0.0 {continue};
             min = if ratio < min {
                 index = i;
                 ratio
