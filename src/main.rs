@@ -1,11 +1,11 @@
 fn main() {
     println!("Start LP");
 
-    let c = Canonical::sample();
-    println!("{:?}", c);
+    let c = Canonical::klee_minty(22, 2.1);
+    //println!("{:?}", c);
     let mut d = Dict::from_canonical(&c);
     d.solve();
-    println!("{:?}", d);
+    //println!("{:?}", d);
 }
 
 #[derive(Debug)]
@@ -76,13 +76,16 @@ impl Dict {
         d
     }
     pub fn solve(&mut self) -> Option<()> {
+        let mut x = 0;
         loop {
+            x += 1;
             let i = match self.choose_column() {
                 None => break,
                 Some(i) => i,
             };
             self.pivot(i)?;
         }
+        println!("loop num is {}", x);
         Some(())
     }
     fn choose_column(&self) -> Option<usize> {
@@ -156,4 +159,30 @@ impl Canonical {
         a.push(vec![2.0, 1.0]);
         Canonical { a: a, b: b, c: c }
     }
+    fn klee_minty(n: usize, f: f64) -> Canonical {
+        let c = (0..n).map(|x| f.powi((n - 1 - x) as i32)).collect();
+        let b = (0..n).map(|x| f.powf(2.0 * x as f64)).collect();
+        let mut a = Vec::new();
+        for i in 0..n {
+            a.push(
+                (0..n)
+                    .map(|x| {
+                        if x < i {
+                            2.0 * f.powi((i - x) as i32)
+                        } else if x == i {
+                            1.0
+                        } else {
+                            0.0
+                        }
+                    }).collect(),
+            )
+        }
+        Canonical { a: a, b: b, c: c }
+    }
+}
+
+#[test]
+fn test_klee() {
+    let c = Canonical::klee_minty(3, 2.0);
+    println!("{:?}", c)
 }
